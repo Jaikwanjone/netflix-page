@@ -1,5 +1,4 @@
 import Middle from "../components/Middle";
-import NewStyle from "../components/NewStyle";
 import { UnderMiddle } from "../components/UnderMiddle";
 
 const Accounts = () => {
@@ -41,7 +40,6 @@ const Accounts = () => {
       </div>
       <Middle />
       <UnderMiddle />
-      <NewStyle />
     </div>
   );
 };
