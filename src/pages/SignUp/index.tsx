@@ -1,10 +1,37 @@
+import { motion } from "framer-motion";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { UserAuth } from "../../context/AuthContext";
 const SignUp = () => {
+  const { SignUp } = UserAuth();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const handleSubmit = async () => {};
+  const [error, setError] = useState<string>("");
+  const navigate = useNavigate();
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const res = await SignUp({ email, password });
+      const access = await res.user.getIdToken();
+      localStorage.setItem("NETFLIX", access);
+      navigate("/");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.log(error.message);
+        setError(error.message);
+      } else {
+        console.log("Please check and try again");
+        setError("Please check and try again");
+      }
+    }
+  };
+  // useEffect(() => {
+  //   const time = setTimeout(() => {
+  //     setError("");
+  //   }, 2000);
+  //   return () => clearTimeout(time);
+  // }, [error]);
+
   return (
     <>
       <div className=" w-full h-screen">
@@ -18,7 +45,28 @@ const SignUp = () => {
           <div className=" max-w-[450px] h-[600px] mx-auto bg-black/75 text-white rounded">
             <div className=" max-w-[320px] mx-auto py-16">
               <h1 className=" text-3xl font-bold text-center">Sign Up</h1>
-              <form className="w-full flex flex-col py-6">
+              <div className=" h-[40px] mt-1">
+                {error ? (
+                  <motion.p
+                    className="p-2 h-full bg-red-400 rounded"
+                    initial={{ opacity: 0, y: 20 }} // Start position (lower)
+                    animate={{ opacity: 1, y: 0 }} // Move up and become visible
+                    exit={{ opacity: 0, y: 20 }} // Move down and disappear
+                    transition={{ duration: 0.3, ease: "easeInOut" }} // Smooth transition
+                    onAnimationComplete={() => {
+                      setTimeout(() => setError(""), 2000);
+                    }}
+                  >
+                    {error}
+                  </motion.p>
+                ) : (
+                  <span className=" h-full"></span>
+                )}
+              </div>
+              <form
+                onSubmit={handleSubmit}
+                className="w-full flex flex-col py-6"
+              >
                 <input
                   className="my-2 p-3 bg-gray-600 rounded "
                   type="email"

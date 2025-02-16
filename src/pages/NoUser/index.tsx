@@ -1,7 +1,9 @@
-import Middle from "../components/Middle";
-import { UnderMiddle } from "../components/UnderMiddle";
+import { useNavigate } from "react-router-dom";
+import Middle from "../../components/Middle";
+import { UnderMiddle } from "../../components/UnderMiddle";
 
-const Accounts = () => {
+const NoUser = () => {
+  const navigete = useNavigate();
   return (
     <div>
       <div className="w-full h-[700px]">
@@ -31,7 +33,10 @@ const Accounts = () => {
                 placeholder="Email address"
                 className="p-2 bg-black/45 w-full rounded-md h-[40px] text-xl py-7 px-2 border-2 border-[#2F2F2F] outline-red-800"
               />
-              <button className="px-8 py-3 md:ml-3 w-[50%]  md:mt-0 mt-3 text-2xl shadow-blueBlur  bg-red-600 rounded">
+              <button
+                onClick={() => navigete("/signUp")}
+                className="px-8 py-3 md:ml-3 w-[50%]  md:mt-0 mt-3 text-2xl shadow-blueBlur  bg-red-600 rounded"
+              >
                 Get Started
               </button>
             </div>
@@ -44,4 +49,4 @@ const Accounts = () => {
   );
 };
 
-export default Accounts;
+export default NoUser;

@@ -1,31 +1,48 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { db } from "../Firebase";
 import requests from "../Request";
+import { AppContext, UserAuth } from "../context/AuthContext";
+import { MovieType as Movie, MovieType } from "../types";
 
-export interface Movie {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  release_date: Date;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-}
 const Main = () => {
+  const navigate = useNavigate();
   const [movies, setMovie] = useState<Movie[]>([]);
   const movie = movies[Math.floor(Math.random() * movies.length)];
+  const { user } = UserAuth();
+  const { Movies } = useContext(AppContext);
   useEffect(() => {
     axios.get(requests.requestPopular).then((Response) => {
-      setMovie(Response.data.results);
+      // setMovie(Response.data.results);
+      movies.unshift(...Response.data.results);
+    });
+    axios.get(requests.requestTopRated).then((Response) => {
+      // setMovie(Response.data.results);
+      movies.unshift(...Response.data.results);
+    });
+    axios.get(requests.requestTrending).then((Response) => {
+      // setMovie(Response.data.results);
+      movies.unshift(...Response.data.results);
+    });
+    axios.get(requests.requestHorror).then((Response) => {
+      // setMovie(Response.data.results);
+      movies.unshift(...Response.data.results);
+    });
+    axios.get(requests.requestUpcoming).then((Response) => {
+      // setMovie(Response.data.results);
+      movies.unshift(...Response.data.results);
     });
   }, []);
+  Movies.push(...movies);
+
   const trancateString = (str: string, num: number) => {
     if (str?.length > num) {
       return str.slice(0, num) + "...";
@@ -33,7 +50,31 @@ const Main = () => {
       return str;
     }
   };
-  if (!movies) return null;
+  const movieId = doc(db, "users", `${user?.email}`);
+  const movieData = {
+    id: movie?.id,
+    title: movie?.title,
+    img: movie?.backdrop_path,
+  };
+
+  const saveShow = async () => {
+    const docSnapshot = await getDoc(movieId);
+    const savedShows = docSnapshot.exists()
+      ? docSnapshot.data().savedShows || []
+      : [];
+    const isSaved = savedShows.some((show: MovieType) => show.id === movie.id);
+    if (isSaved) {
+      // If the movie is already saved, remove it
+      await updateDoc(movieId, {
+        savedShows: arrayRemove(movieData),
+      });
+    } else {
+      await updateDoc(movieId, {
+        savedShows: arrayUnion(movieData),
+      });
+    }
+  };
+  if (!movies) return <p>Loading</p>;
   return (
     <div className="w-full h-[550px] text-white">
       <div className="w-full h-full ">
@@ -48,10 +89,16 @@ const Main = () => {
             {movie?.title}
           </h1>
           <div className="my-2">
-            <button className="border bg-gray-300 text-black border-gray-300 py-2 px-5">
+            <button
+              onClick={() => navigate(`/movie/${String(movie?.id)}`)}
+              className="border bg-gray-300 text-black border-gray-300 py-2 px-5 transition-transform duration-300 hover:scale-110 hover:z-20 "
+            >
               Play
             </button>
-            <button className="border text-white border-gray-300 py-2 px-5 ml-4">
+            <button
+              onClick={saveShow}
+              className="border text-white border-gray-300 py-2 px-5 ml-4 transition-transform duration-300 hover:scale-110 hover:z-20"
+            >
               Watch later
             </button>
           </div>
